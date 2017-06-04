@@ -85,9 +85,11 @@ def find_patent_abstract(soup):
 # input: BeautifulSoup Output from Google Patent result page
 # output: top classification of a patent (one letter)
 def find_patent_class(soup):
-    # find the top class
-    classification = soup.find_all("span", {"itemprop" : "Code"})[1]
-    return classification.text
+    # find the classification code
+    classification = soup.find("span", {"itemprop" : "Code"}).text
+    
+    # return the first letter as the top class
+    return classification[0]
 
 
 
