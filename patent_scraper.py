@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import numpy as np
 import pandas as pd
 import urllib
@@ -72,10 +74,14 @@ def find_patent_title(soup):
 # input: BeautifulSoup Output from Google Patent result page
 # output: abstract of the patent
 def find_patent_abstract(soup):
-    # find the head
-    head_content = soup.head
-    # read the abstract
-    abstract = head_content.find("meta",  {"name":"description"})['content']
+    try: 
+        # find the head
+        head_content = soup.head
+        # read the abstract
+        abstract = head_content.find("meta",  {"name":"description"})['content']
+        abstract = abstract
+    except:
+        abstract = None
 
     return abstract
 
@@ -85,11 +91,14 @@ def find_patent_abstract(soup):
 # input: BeautifulSoup Output from Google Patent result page
 # output: top classification of a patent (one letter)
 def find_patent_class(soup):
-    # find the classification code
-    classification = soup.find("span", {"itemprop" : "Code"}).text
+    try:
+        # find the classification code
+        # read the first letter as the top class
+        classification = soup.find("span", {"itemprop" : "Code"}).text[0]
+    except:
+        classification = "NA"
     
-    # return the first letter as the top class
-    return classification[0]
+    return classification
 
 
 
@@ -140,35 +149,23 @@ def find_citation_nums(soup):
 
 ### function to read the content of a patent
 # input: BeautifulSoup Output from Google Patent result page
-# output: background and summary text
+# output: background and summary text together in one string
 def read_patent_content(soup):
-    background = []
-    summary = []
+    description = []
     
     # find the corresponding sections
     text = soup.find("section", {"itemprop" : "description"})
     
     for header in text.find_all('heading'):
-        if header.get_text() == "BACKGROUND OF THE INVENTION":
-            # read the content
-            for elem in header.next_siblings:
-                if elem.name == 'heading':
-                    break
-                if elem.name == 'p':
-                    background.append(elem.get_text())
+        # read all the paragraphs
+        for elem in header.next_siblings:
+            if elem.name == 'p':
+                description.append(elem.get_text())
 
-        if header.get_text() == "SUMMARY OF THE INVENTION":
-            for elem in header.next_siblings:
-                if elem.name == 'heading':
-                    break
-                if elem.name == 'p':
-                    summary.append(elem.get_text())
-    
     # join the paragraphs into a string
-    background = ' '.join(background)
-    summary = ' '.join(summary)
-    
-    return background, summary
+    description = ' '.join(description)
+
+    return description
 
 
 
