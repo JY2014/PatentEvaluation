@@ -175,7 +175,7 @@ def read_patent_content(soup):
 def read_patent_claims(soup):
     claims = soup.find("section", {'itemprop': 'claims'})
     # number of claims
-    num_claims = len(claims)
+    num_claims = int(claims.find("span", {'itemprop': 'count'}).string)
     
     # read claim content
     claim_content = []
