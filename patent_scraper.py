@@ -49,25 +49,14 @@ def find_maintainance_years(soup):
 
 ### function to read title of a patent
 # input: BeautifulSoup Output from Google Patent result page
-# output: title and patent number of the patent
+# output: title with patent number
 def find_patent_title(soup):
-    # read the title and split by '-'
-    title_content = soup.title.string.split("-")
+    # read the title 
+    title_content = soup.title.string
+    # remove the patent number (first 14 char)
+    title = title_content[14:]
     
-    # extract the body of the title
-    title = title_content[1]
-    # remove the space
-    title = title[1:len(title)-3]
-    # remove '\n'
-    title = title.split("\n")[0]
-    
-    # read the patent number
-    patent_num = title_content[0]
-    # remove space
-    patent_num = patent_num[:len(patent_num)-1]
-    
-    return title, patent_num
-
+    return title
 
 
 ### function to extract abstract of a patent
@@ -224,3 +213,58 @@ def count_similar_documents(soup):
             continue
     
     return doc_num
+
+
+### function to find the number of inventors of the patent
+# mainly for the new patents input into the webapp
+def find_num_inventors(soup):
+    inventors = soup.find_all("meta", {"name" : "DC.contributor", "scheme" : "inventor"})
+    return len(inventors)
+
+
+### function to read all the relevant information of a new patent
+# intercept column is added to the features (first one)
+def read_patent_info(soup):
+    
+    # add top classification of the patent
+    patent_class = find_patent_class(soup)
+    # one-hot encode the classes
+    class_one_hot = np.zeros(7)
+    classes = ['B', 'C', 'D', 'E', 'F', 'G', 'H']
+    
+    for i in range(len(classes)):
+        ind_class = classes[i]
+        if patent_class == ind_class:
+            class_one_hot[i] = 1
+    class_one_hot = class_one_hot.reshape((1, 7))
+    
+    # number of fine applications
+    num_applications = find_patent_applications(soup)
+    # number of citations
+    patent_citations, non_patent_citations = find_citation_nums(soup)
+    
+    # add similar documents
+    similar_doc_num = count_similar_documents(soup)
+    
+    # add abstract
+    abstract = find_patent_abstract(soup)
+    
+    # add background and summary description
+    description = read_patent_content(soup)
+    
+    # add claims
+    num_claims, claim_content = read_patent_claims(soup)
+    
+    # find number of inventors
+    num_authors = find_num_inventors(soup)
+    
+    # put all the information together
+    # all other features except for classification
+    patent_nontext = [num_applications, patent_citations, non_patent_citations,
+                      num_claims, similar_doc_num, num_authors]
+    patent_nontext = np.asarray(patent_nontext)
+    patent_nontext = patent_nontext.reshape((1, 6))
+    # combine with classification
+    patent_nontext = np.concatenate([class_one_hot, patent_nontext], axis = 1)
+
+    return patent_nontext
