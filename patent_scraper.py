@@ -6,6 +6,12 @@ import urllib
 import io
 from bs4 import BeautifulSoup
 from datetime import datetime
+import gensim
+from gensim.models import Word2Vec
+from nltk import word_tokenize
+from nltk.corpus import stopwords
+from nltk.stem.wordnet import WordNetLemmatizer
+import string
 
 ##### A list of functions to scrape information from Google Patent page #####
 
@@ -53,8 +59,16 @@ def find_maintainance_years(soup):
 def find_patent_title(soup):
     # read the title 
     title_content = soup.title.string
-    # remove the patent number (first 14 char)
-    title = title_content[14:]
+    
+    # extract the main title
+    # find the components
+    elements = title_content.split('-')
+    # find the length of the patent number and google tag
+    len_1 = len(elements[0])
+    len_2 = len(elements[-1])
+    
+    # remove the elements, just leave the main title
+    title = title_content[len_1+2 : len(title_content)-len_2-2].strip()
     
     return title
 
@@ -222,6 +236,80 @@ def find_num_inventors(soup):
     return len(inventors)
 
 
+### function to compute average word-vector for a text
+def dec_vec(model, text):
+    # store the vector for each word
+    vectors = []
+    
+    # compute on each word
+    for j in range(len(text)):
+        try:
+            vectors.append(model.wv[text[j]])
+        except:
+            continue
+    
+    if not vectors:
+        vectors_mean = np.zeros((1, 100))
+    else:
+        vectors_mean = np.nanmean(vectors, axis = 0)
+        vectors_mean = vectors_mean.reshape((1, 100))
+    
+    # return vector mean
+    return vectors_mean
+
+
+
+### function to tokenize and clean a text
+def tokenize_cleaning(text):
+    # tokenize the text first
+    try:
+        tokens = word_tokenize(text.decode('utf-8'))
+    except:
+        tokens = word_tokenize(text)
+    
+    # lowercase all the words
+    tokens = [w.lower() for w in tokens]
+    
+    # clean up stop words and punctuations 
+    stop_list = stopwords.words('english') + list(string.punctuation)
+
+    tokens_no_stop = [token for token in tokens
+                        if token not in stop_list]            
+
+    # use lemma instead
+    # reason: remove the influence of plural or tense
+    # but retain the subtle difference in legal writting
+    lemmatizer = WordNetLemmatizer()
+    tokens_lemma = [lemmatizer.lemmatize(token) for token in tokens_no_stop]
+    
+    # remove numbers (the actual values are not useful)
+    tokens_no_num = []
+    for token in tokens_lemma:
+        try:
+            float(token)
+        except:
+            tokens_no_num.append(token)
+    
+    return tokens_no_num
+
+
+
+### function to format claims of a patent by trained word2vec
+# for the new patents input into the webapp
+# it returns a vector of size (1, 100)
+def format_claims(text):
+    # tokenize the text first
+    cleaned_text = tokenize_cleaning(text)
+    
+    # read the model
+    word2vec_model = Word2Vec.load('models/word2vec_claims_final')
+    
+    # compute the vector for the cleaned text
+    vec = dec_vec(word2vec_model, cleaned_text)
+    
+    return vec
+
+
 ### function to read all the relevant information of a new patent
 # intercept column is added to the features (first one)
 def read_patent_info(soup):
@@ -246,12 +334,6 @@ def read_patent_info(soup):
     # add similar documents
     similar_doc_num = count_similar_documents(soup)
     
-    # add abstract
-    abstract = find_patent_abstract(soup)
-    
-    # add background and summary description
-    description = read_patent_content(soup)
-    
     # add claims
     num_claims, claim_content = read_patent_claims(soup)
     
@@ -266,5 +348,10 @@ def read_patent_info(soup):
     patent_nontext = patent_nontext.reshape((1, 6))
     # combine with classification
     patent_nontext = np.concatenate([class_one_hot, patent_nontext], axis = 1)
-
-    return patent_nontext
+    
+    # format claims by the trained word2vec
+    patent_claims = format_claims(claim_content)
+    # combine the text vector with the non-text features
+    patent_features = np.concatenate([patent_nontext, patent_claims], axis = 1)
+    
+    return patent_features
