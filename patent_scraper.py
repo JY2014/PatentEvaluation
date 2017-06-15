@@ -312,7 +312,7 @@ def format_claims(text):
 
 ### function to read all the relevant information of a new patent
 # intercept column is added to the features (first one)
-def read_patent_info(soup):
+def read_patent_info(soup, WO_index):
     
     # add top classification of the patent
     patent_class = find_patent_class(soup)
@@ -335,7 +335,10 @@ def read_patent_info(soup):
     similar_doc_num = count_similar_documents(soup)
     
     # add claims
-    num_claims, claim_content = read_patent_claims(soup)
+    if WO_index == 0:
+        num_claims, claim_content = read_patent_claims(soup)
+    else:
+        num_claims, claim_content = read_patent_claims_WO(soup)
     
     # find number of inventors
     num_authors = find_num_inventors(soup)
@@ -355,3 +358,26 @@ def read_patent_info(soup):
     patent_features = np.concatenate([patent_nontext, patent_claims], axis = 1)
     
     return patent_features
+
+
+### function to read claims for WO patents
+# the format is different for international patents
+def read_patent_claims_WO(soup):
+    claims = soup.find("section", {'itemprop': 'claims'})
+    # number of claims
+    numbers = claims.find_all('claim')
+    number = numbers[len(numbers)-1]
+    num_claims = int(number['num'])
+    
+    # read claim content
+    claim_content = []
+    # find the corresponding sections
+    contents = claims.find_all('div', {'class':'claim-text'})
+
+    for content in contents:
+        if content.string is not None:
+            claim_content.append(content.string)
+    # join the lines
+    claim_content = ' '.join(claim_content)
+    
+    return num_claims, claim_content  
