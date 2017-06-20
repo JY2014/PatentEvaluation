@@ -5,7 +5,7 @@ The project is developed to predict potential usefulness of patents based on pat
 
 Patents serve as an important asset for technology companies. However, reports estimated that most patents failed to generate enough return to cover the investment <a href="http://ei.com/wp-content/uploads/downloadables/EI_Patent_Study_Singer.pdf" class="text">[1]</a>. Even though evaluating the potential of a patent based on its content is a difficult task even for experts, machine learning methods are able to help on this task by processing complex information and picking up subtle signals. The final model is estimated to generate about $2000 increased net value per applied patent.
 
-## The web app is hosted at <a href="jennyyu.tech/patent" class="text">jennyyu.tech/patent</a>
+## The web app is hosted at <a href="http://jennyyu.tech/patent" class="text">jennyyu.tech/patent</a>
 
 ## Files
 
