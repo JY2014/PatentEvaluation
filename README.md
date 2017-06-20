@@ -1,7 +1,7 @@
 # Patent Evaluator 
-# -- Increase Return on Patent Investments
+# -- Increase Return of Patent Investments
 
-The project is developed to predict potential usefulness of patents based on patent information and content, aiming to increase the overall return on patent investment for companies.
+The project is developed to predict potential usefulness of patents based on patent information and content, aiming to increase the overall return of patent investment for companies.
 
 Patents serve as an important asset for technology companies. However, reports estimated that most patents failed to generate enough return to cover the investment <a href="http://ei.com/wp-content/uploads/downloadables/EI_Patent_Study_Singer.pdf" class="text">[1]</a>. Even though evaluating the potential of a patent based on its content is a difficult task even for experts, machine learning methods are able to help on this task by processing complex information and picking up subtle signals. The final model is estimated to generate about $2000 increased net value per applied patent.
 
