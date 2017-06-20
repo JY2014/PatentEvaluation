@@ -1,5 +1,5 @@
 # Patent Evaluator 
-# -- Increase Return of Patent Investments
+## -- Increase Return of Patent Investments
 
 The project is developed to predict potential usefulness of patents based on patent information and content, aiming to increase the overall return of patent investment for companies.
 
