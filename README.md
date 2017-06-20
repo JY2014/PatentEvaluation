@@ -8,9 +8,27 @@ Patents serve as an important asset for technology companies. However, reports e
 ## The web app is hosted at <a href="http://jennyyu.tech/patent" class="text">jennyyu.tech/patent</a>
 
 ## Files
+### Code
+- **patent_scraper.py**: Functions to scrape patent data from Google Patents and extract relevant features
+- **scrape_patent_data.ipynb**: Read from patent lists downloaded from Google Patents search (saved in *patent_lists* folder), scrape the information from Google Patents and store into PostgreSQL database
+- **cleaning_nontext.ipynb**: Clean non-text features from the patents, saved as *patent_data/nontext_features.p*; Word counts of the text data was also added as features, saved as *patent_data/nontext_features_addwordcounts.p*
+- **models_nontext.ipynb**: Fit logistic regression and random forest models on non-text features
+- **word2vec_training.ipynb**: Train word2vec model on claims of 21000 patents; Process patent claims by the word2vec model and fit random forest model on it
+- **combined_nontext_word2vec.ipynb**: Combine non-text features and word2vec vectors, fit random forest models. Generate the final model saved in *models* folder
+### Data files
+- **patent_lists/**: Basic information of patents downloaded from Google Patents search results. Include university patents granted by US patent office in 2004-2010
+- **patent_data/nontext_features.p**: cleaned non-text features of patents in 2004-2007 
+- **patent_data/nontext_features_addwordcounts.p**: word counts of patent title, abstract, description and claims are added to the non-text features
+### Final models
+- **modles/final_model.p**: Final random forest model with max_features tuned by cross validation on net value of investment
+- **models/final_model_scaler.p**: Standardization scaler trained on the training data (RF model does not need standardization. Standardization was used because of training logistic regression, and was kept in the final model.)
+- **models/words2vec_claims_final.p**: word2vec model trained on claims of 21000 patents in 2004-2010
+### Files for web app
+
+
 
 ## Data
-University patents approved by US patent office were scraped from <a href="https://patents.google.com/" class="text">Google Patents</a>. The classifier model was trained on 10,030 patents in 2004-2007. In addition, a Word2Vec model was trained on 23,000 university patents in 2004-2010 to process the text data. The model was tested on 2000 patents in the held-out testing set. 
+University patents approved by US patent office were scraped from <a href="https://patents.google.com/" class="text">Google Patents</a>. The classifier model was trained on 10,030 patents in 2004-2007. In addition, a Word2Vec model was trained on 21,000 university patents in 2004-2010 to process the text data. The model was tested on 2000 patents in the held-out testing set. 
 
 ## Features
 Patents are classified based on both text and non-text features. 
