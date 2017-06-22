@@ -24,6 +24,7 @@ Patents serve as an important asset for technology companies. However, reports e
 - **models/final_model_scaler.p**: Standardization scaler trained on the training data (RF model does not need standardization. Standardization was used because of training logistic regression, and was kept in the final model.)
 - **models/words2vec_claims_final.p**: word2vec model trained on claims of 21000 patents in 2004-2010
 ### Files for web app
+- **flask/**
 
 
 
